@@ -1,0 +1,25 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Open Sans', Helvetica, sans-serif;
+  font-size: '100%';
+  background: #FFEFE6;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: #EF4339;
+  text-decoration: none;
+}
+
+p {
+  line-height: 1.5;
+}

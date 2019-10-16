@@ -1,0 +1,32 @@
+{
+  "name": "booksql",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "forever dist/app.js",
+    "build": "webpack"
+  },
+  "now": {
+    "alias": "booksql.now.sh"
+  },
+  "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-loader": "^7.0.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
+    "babel-preset-es2015": "^6.24.1",
+    "webpack": "^2.5.1"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "chalk": "^1.1.3",
+    "express": "^4.15.3",
+    "express-graphql": "^0.6.5",
+    "forever": "^0.15.3",
+    "graphql": "^0.9.6",
+    "graphql-helpers": "^0.0.11",
+    "isomorphic-fetch": "^2.2.1",
+    "morgan": "^1.8.1"
+  }
+}

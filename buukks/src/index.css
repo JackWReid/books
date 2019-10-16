@@ -1,0 +1,19 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  color: #2E112D;
+  font-family: 'Hack', monospace;
+  font-size: 18px;
+}
+
+a {
+  color: inherit;
+}
+
+p {
+  line-height: 1.5;
+}
