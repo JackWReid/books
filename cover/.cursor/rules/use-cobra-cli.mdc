@@ -1,0 +1,11 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- **Use Cobra CLI framework** for all command implementations
+- **Add new arguments and flags** using Cobra's built-in methods
+- **Follow the command structure** defined in @docs/PLAN.md
+- **Focus on readable code** with clear variable names and logical structure
+- **Comment the code well** - explain complex logic, API interactions, and business rules
+- **Use Go best practices** for error handling, package structure, and testing

@@ -1,0 +1,12 @@
+---
+description: Suggesting improvements once core requirements are done
+globs: 
+alwaysApply: false
+---
+- **Identify refactoring opportunities** in existing code during development
+- **Offer to implement refactoring** when it improves code quality or maintainability
+- **Focus on the main task first** - refactoring should not block primary feature development
+- **Document refactoring decisions** in the appropriate documentation files
+- **Follow the API client patterns** established in the internal/api directory
+- **Handle errors gracefully** with meaningful error messages
+- **Implement rate limiting** and timeout handling for external APIs

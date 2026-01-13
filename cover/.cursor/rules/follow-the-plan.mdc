@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- **Always follow the general plan in @docs/PLAN.md**
+- **Always keep @docs/PLAN.md up to date** after making changes or changing approach
+- **Always keep @docs/TODO.md up to date** after making changes or changing approach  
+- **Always keep @docs/TEST_PLAN.md up to date** after making changes or changing approach
+- **Follow the structure** defined in @docs/PLAN.md
+- **Use the internal packages** for API clients, models, and utilities
+- **Maintain separation of concerns** between CLI commands and business logic

@@ -1,0 +1,8 @@
+---
+description: Approaching testing strategy
+globs: 
+alwaysApply: false
+---
+- **Write tests for new functionality** following the patterns in existing test files
+- **Update test plans** in @docs/TEST_PLAN.md when adding new test scenarios
+- **Use httptest for API mocking** in integration tests
