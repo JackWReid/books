@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📚 Bookscan</h1>
+      <p>Find books on this page</p>
+    </div>
+    
+    <div class="settings-section" id="settingsSection">
+      <h3>API Keys</h3>
+      <div class="input-group">
+        <label for="openaiKey">OpenAI API Key:</label>
+        <input type="password" id="openaiKey" placeholder="sk-...">
+      </div>
+      <div class="input-group">
+        <label for="hardcoverKey">Hardcover API Key:</label>
+        <input type="password" id="hardcoverKey" placeholder="Bearer ...">
+      </div>
+      <button id="saveKeys" class="btn-primary">Save Keys</button>
+      <div id="keysMessage" class="message"></div>
+    </div>
+    
+    <div class="scan-section" id="scanSection" style="display: none;">
+      <button id="scanButton" class="btn-primary">🔍 Scan Page for Books</button>
+      <div id="statusBox" class="status-box"></div>
+      <div id="scanStatus" class="status"></div>
+      
+      <div id="resultsSection" class="results-section" style="display: none;">
+        <h3>Found Books</h3>
+        <div id="booksList"></div>
+      </div>
+      
+      <!-- Debug Section -->
+      <div class="debug-section">
+        <div class="footer-row">
+          <button id="toggleDebug" class="btn-secondary small-btn">🐛 Toggle Debug Info</button>
+          <button id="toggleSettings" class="btn-secondary small-btn">⚙️ Settings</button>
+        </div>
+        <div id="debugSection" class="debug-content" style="display: none;">
+          <h4>Debug Information</h4>
+          <div class="debug-tabs">
+            <button class="debug-tab active" data-tab="page-content">Page Content</button>
+            <button class="debug-tab" data-tab="simplified">Simplified Content</button>
+            <button class="debug-tab" data-tab="openai-request">OpenAI Request</button>
+            <button class="debug-tab" data-tab="openai-response">OpenAI Response</button>
+            <button class="debug-tab" data-tab="parsed-books">Parsed Books</button>
+            <button class="debug-tab" data-tab="hardcover-requests">Hardcover Requests</button>
+          </div>
+          <div id="debugContent" class="debug-output"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <button id="toggleSettings" class="btn-secondary">⚙️ Settings</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 

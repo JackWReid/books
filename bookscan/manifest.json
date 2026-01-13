@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  "name": "Bookscan",
+  "version": "1.0",
+  "description": "Scan web pages for book references and add them to reading lists on Hardcover, Goodreads, and Oku",
+  
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png"
+  },
+  
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "storage",
+    "clipboardWrite",
+    "https://api.openai.com/*",
+    "https://api.hardcover.app/*"
+  ],
+  
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Bookscan - Find Books on This Page"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_scripts/content.js"]
+    }
+  ]
+} 
