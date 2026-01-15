@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"cover/internal/api"
+	"cover/internal/models"
 	"cover/internal/utils"
 
 	"github.com/spf13/cobra"
@@ -23,6 +24,7 @@ var (
 	perPage       int
 	sortOrder     string
 	searchTable   bool
+	searchType    string
 )
 
 // searchCmd represents the search command
@@ -38,7 +40,9 @@ Examples:
   cover search "The Hobbit"                    # Search for a book
   cover search "Dune" --hardcover              # Search and open Hardcover page
   cover search "1984" --goodreads --oku        # Search and open multiple services
-  cover search "Python" --per-page 10          # Limit results to 10 per page`,
+  cover search "Python" --per-page 10          # Limit results to 10 per page
+  cover search "Asimov" --type author          # Search for authors
+  cover search "Dune" --type series            # Search for series`,
 	Args: cobra.ExactArgs(1),
 	RunE: runSearch,
 }
@@ -52,10 +56,15 @@ func init() {
 	searchCmd.Flags().IntVarP(&perPage, "per-page", "p", 25, "Results per page")
 	searchCmd.Flags().StringVarP(&sortOrder, "sort", "s", "activities_count:desc", "Sort order")
 	searchCmd.Flags().BoolVarP(&searchTable, "table", "t", false, "Show results as a list")
+	searchCmd.Flags().StringVar(&searchType, "type", "books", "Search type (books, authors, series)")
 }
 
 func runSearch(cmd *cobra.Command, args []string) error {
 	query := args[0]
+	normalizedType, err := normalizeSearchType(searchType)
+	if err != nil {
+		return err
+	}
 
 	// Validate API key
 	if apiKey == "" {
@@ -65,68 +74,74 @@ func runSearch(cmd *cobra.Command, args []string) error {
 	// Create Hardcover client
 	client := api.NewHardcoverClient(apiKey)
 
-	// Perform search - always search for books
-	searchResponse, err := client.SearchBooks(query, "books", perPage, 1, sortOrder)
+	if normalizedType != "books" && (openHardcover || openGoodreads || openOku || searchISBN) {
+		return fmt.Errorf("open/ISBN flags are only supported for book searches")
+	}
+
+	// Perform search
+	searchResponse, err := client.SearchBooks(query, normalizedType, perPage, 1, sortOrder)
 	if err != nil {
 		return fmt.Errorf("search failed: %w", err)
 	}
 
-	// Parse the search results to extract SearchBook information
-	searchBooks, err := client.ParseSearchResults(searchResponse)
-	if err != nil {
-		return fmt.Errorf("parse search results failed: %w", err)
-	}
-
-	if len(searchBooks) == 0 {
-		fmt.Println("No results found.")
-		return nil
-	}
-
-	// Show only the first result by default
-	selectedBook := searchBooks[0]
-
-	// Handle browser opening flags first
-	if openHardcover || openGoodreads || openOku {
-		if openHardcover {
-			hardcoverURL := fmt.Sprintf("https://hardcover.app/books/%s", selectedBook.Slug)
-			fmt.Printf("Opening Hardcover page: %s\n", hardcoverURL)
-			if err := utils.OpenURL(hardcoverURL); err != nil {
-				fmt.Fprintf(os.Stderr, "Warning: Failed to open Hardcover page: %v\n", err)
-			}
+	if normalizedType == "books" {
+		// Parse the search results to extract SearchBook information
+		searchBooks, err := client.ParseSearchResults(searchResponse)
+		if err != nil {
+			return fmt.Errorf("parse search results failed: %w", err)
 		}
 
-		if openGoodreads {
-			goodreadsURL, err := getGoodreadsURL(selectedBook.Title)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Warning: Failed to get Goodreads URL: %v\n", err)
-			} else {
-				fmt.Printf("Opening Goodreads page: %s\n", goodreadsURL)
-				if err := utils.OpenURL(goodreadsURL); err != nil {
-					fmt.Fprintf(os.Stderr, "Warning: Failed to open Goodreads page: %v\n", err)
+		if len(searchBooks) == 0 {
+			fmt.Println("No results found.")
+			return nil
+		}
+
+		// Show only the first result by default
+		selectedBook := searchBooks[0]
+
+		// Handle browser opening flags first
+		if openHardcover || openGoodreads || openOku {
+			if openHardcover {
+				hardcoverURL := fmt.Sprintf("https://hardcover.app/books/%s", selectedBook.Slug)
+				fmt.Printf("Opening Hardcover page: %s\n", hardcoverURL)
+				if err := utils.OpenURL(hardcoverURL); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: Failed to open Hardcover page: %v\n", err)
+				}
+			}
+
+			if openGoodreads {
+				goodreadsURL, err := getGoodreadsURL(selectedBook.Title)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: Failed to get Goodreads URL: %v\n", err)
+				} else {
+					fmt.Printf("Opening Goodreads page: %s\n", goodreadsURL)
+					if err := utils.OpenURL(goodreadsURL); err != nil {
+						fmt.Fprintf(os.Stderr, "Warning: Failed to open Goodreads page: %v\n", err)
+					}
+				}
+			}
+
+			if openOku {
+				okuURL, err := getOkuURL(selectedBook.Title)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: Failed to get Oku URL: %v\n", err)
+				} else {
+					fmt.Printf("Opening Oku page: %s\n", okuURL)
+					if err := utils.OpenURL(okuURL); err != nil {
+						fmt.Fprintf(os.Stderr, "Warning: Failed to open Oku page: %v\n", err)
+					}
 				}
 			}
 		}
 
-		if openOku {
-			okuURL, err := getOkuURL(selectedBook.Title)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Warning: Failed to get Oku URL: %v\n", err)
-			} else {
-				fmt.Printf("Opening Oku page: %s\n", okuURL)
-				if err := utils.OpenURL(okuURL); err != nil {
-					fmt.Fprintf(os.Stderr, "Warning: Failed to open Oku page: %v\n", err)
-				}
-			}
+		// Display results - default to JSON, show list when -t flag is used
+		if !searchTable {
+			// Default: JSON output
+			encoder := json.NewEncoder(os.Stdout)
+			encoder.SetIndent("", "  ")
+			return encoder.Encode(selectedBook)
 		}
-	}
 
-	// Display results - default to JSON, show list when -t flag is used
-	if !searchTable {
-		// Default: JSON output
-		encoder := json.NewEncoder(os.Stdout)
-		encoder.SetIndent("", "  ")
-		return encoder.Encode(selectedBook)
-	} else {
 		// List format when -t flag is used
 		fmt.Printf("Found result for '%s':\n\n", query)
 		fmt.Printf("ID: %s\n", selectedBook.ID)
@@ -151,9 +166,117 @@ func runSearch(cmd *cobra.Command, args []string) error {
 		}
 
 		fmt.Printf("Rating: %.1f (%d ratings)\n", selectedBook.Rating, selectedBook.RatingsCount)
+		return nil
 	}
 
+	searchDocs, err := parseSearchDocuments(searchResponse)
+	if err != nil {
+		return fmt.Errorf("parse search results failed: %w", err)
+	}
+
+	if len(searchDocs) == 0 {
+		fmt.Println("No results found.")
+		return nil
+	}
+
+	selectedDoc := searchDocs[0]
+	if !searchTable {
+		encoder := json.NewEncoder(os.Stdout)
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(selectedDoc)
+	}
+
+	printSearchDocument(query, normalizedType, selectedDoc)
 	return nil
+}
+
+func normalizeSearchType(raw string) (string, error) {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "", "book", "books":
+		return "books", nil
+	case "author", "authors":
+		return "authors", nil
+	case "series":
+		return "series", nil
+	default:
+		return "", fmt.Errorf("unsupported search type %q (supported: books, authors, series)", raw)
+	}
+}
+
+func parseSearchDocuments(searchResp *models.SearchResponse) ([]map[string]interface{}, error) {
+	if searchResp.Results.Found == 0 {
+		return []map[string]interface{}{}, nil
+	}
+
+	docs := make([]map[string]interface{}, 0, len(searchResp.Results.Hits))
+	for _, hit := range searchResp.Results.Hits {
+		var doc map[string]interface{}
+		if err := json.Unmarshal(hit.Document, &doc); err != nil {
+			return nil, err
+		}
+		docs = append(docs, doc)
+	}
+
+	return docs, nil
+}
+
+func printSearchDocument(query, searchType string, doc map[string]interface{}) {
+	fmt.Printf("Found result for '%s' (%s):\n\n", query, searchType)
+	if id := getSearchDocString(doc, "id"); id != "" {
+		fmt.Printf("ID: %s\n", id)
+	}
+	if name := getSearchDocString(doc, "name", "title"); name != "" {
+		fmt.Printf("Name: %s\n", name)
+	}
+	if slug := getSearchDocString(doc, "slug"); slug != "" {
+		fmt.Printf("Slug: %s\n", slug)
+	}
+	if count := getSearchDocNumber(doc, "books_count", "book_count"); count != "" {
+		fmt.Printf("Books: %s\n", count)
+	}
+}
+
+func getSearchDocString(doc map[string]interface{}, keys ...string) string {
+	for _, key := range keys {
+		value, ok := doc[key]
+		if !ok {
+			continue
+		}
+		switch typed := value.(type) {
+		case string:
+			return typed
+		case fmt.Stringer:
+			return typed.String()
+		case float64:
+			if typed == float64(int64(typed)) {
+				return fmt.Sprintf("%d", int64(typed))
+			}
+			return fmt.Sprintf("%f", typed)
+		case int:
+			return fmt.Sprintf("%d", typed)
+		case int64:
+			return fmt.Sprintf("%d", typed)
+		}
+	}
+	return ""
+}
+
+func getSearchDocNumber(doc map[string]interface{}, keys ...string) string {
+	for _, key := range keys {
+		value, ok := doc[key]
+		if !ok {
+			continue
+		}
+		switch typed := value.(type) {
+		case float64:
+			return fmt.Sprintf("%d", int64(typed))
+		case int:
+			return fmt.Sprintf("%d", typed)
+		case int64:
+			return fmt.Sprintf("%d", typed)
+		}
+	}
+	return ""
 }
 
 // getGoodreadsURL attempts to find a Goodreads URL for the book using the API client

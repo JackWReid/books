@@ -416,7 +416,11 @@ func (c *HardcoverClient) ParseSearchResults(searchResp *models.SearchResponse) 
 
 	var books []models.SearchBook
 	for _, hit := range searchResp.Results.Hits {
-		books = append(books, hit.Document)
+		var book models.SearchBook
+		if err := json.Unmarshal(hit.Document, &book); err != nil {
+			return nil, fmt.Errorf("decode search hit failed: %w", err)
+		}
+		books = append(books, book)
 	}
 
 	return books, nil

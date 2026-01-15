@@ -209,18 +209,18 @@ func TestSearchResponseMarshalUnmarshal(t *testing.T) {
 			Found: 2,
 			Hits: []SearchHit{
 				{
-					Document: SearchBook{
+					Document: mustMarshalSearchDoc(t, SearchBook{
 						ID:    "123",
 						Title: "Test Book 1",
 						Slug:  "test-book-1",
-					},
+					}),
 				},
 				{
-					Document: SearchBook{
+					Document: mustMarshalSearchDoc(t, SearchBook{
 						ID:    "456",
 						Title: "Test Book 2",
 						Slug:  "test-book-2",
-					},
+					}),
 				},
 			},
 			OutOf: 1000,
@@ -246,6 +246,15 @@ func TestSearchResponseMarshalUnmarshal(t *testing.T) {
 	if !reflect.DeepEqual(searchResponse, out) {
 		t.Errorf("expected %+v, got %+v", searchResponse, out)
 	}
+}
+
+func mustMarshalSearchDoc(t *testing.T, doc SearchBook) json.RawMessage {
+	t.Helper()
+	data, err := json.Marshal(doc)
+	if err != nil {
+		t.Fatalf("marshal search document failed: %v", err)
+	}
+	return data
 }
 
 func TestUserBookToBlogBook(t *testing.T) {

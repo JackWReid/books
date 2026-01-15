@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -157,11 +158,11 @@ type ListBook struct {
 
 // SearchHit represents a single search result hit
 type SearchHit struct {
-	Document      SearchBook  `json:"document"`
-	Highlight     interface{} `json:"highlight,omitempty"`
-	Highlights    interface{} `json:"highlights,omitempty"`
-	TextMatch     interface{} `json:"text_match,omitempty"`
-	TextMatchInfo interface{} `json:"text_match_info,omitempty"`
+	Document      json.RawMessage `json:"document"`
+	Highlight     interface{}     `json:"highlight,omitempty"`
+	Highlights    interface{}     `json:"highlights,omitempty"`
+	TextMatch     interface{}     `json:"text_match,omitempty"`
+	TextMatchInfo interface{}     `json:"text_match_info,omitempty"`
 }
 
 // SearchResults represents the raw search results from Typesense
