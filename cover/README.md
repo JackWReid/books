@@ -73,12 +73,13 @@ cover search "978-0547928227"  # Search by ISBN
 #### Search Options
 
 - `--isbn, -i`: Return only the ISBN of the first result
-- `--table, -t`: Display results in a formatted table instead of JSON
+- `--table, -t`: Display compact text output
 - `--hardcover`: Open the book's Hardcover page in your browser
 - `--goodreads, -g`: Open the book's Goodreads page in your browser
 - `--oku, -o`: Open the book's Oku page in your browser
 - `--per-page, -p`: Number of results per page (default: 25)
 - `--sort, -s`: Sort order (default: "activities_count:desc")
+- `--json`: Output JSON (global flag)
 
 #### Search Examples
 
@@ -175,9 +176,9 @@ cover list "Want to Read"    # Show books with "Want to Read" status
 #### List Options
 
 - `--status, -s`: Filter by reading status (1-5)
-- `--table, -t`: Display in table format
-- `--json, -j`: Output in JSON format
-- `--blog, -b`: Output in blog format (matching blog-to-read.json structure)
+- `--table, -t`: Display in table format (default)
+- `--json`: Output in JSON format (global flag)
+- `--blog, -b`: Output in blog format (matching blog-to-read.json structure, requires `--json`)
 
 #### Status-Based Listing
 
@@ -203,7 +204,7 @@ cover list --status 2 --table
 
 **Export reading list for blog**:
 ```bash
-cover list --status 3 --blog > my-read-books.json
+cover list --status 3 --blog --json > my-read-books.json
 ```
 
 **Get JSON data for integration**:
@@ -278,7 +279,7 @@ cover list cyberpunk --table
 **Generate content for your book blog**:
 ```bash
 # Export recently read books
-cover list --status 3 --blog > recent-reads.json
+cover list --status 3 --blog --json > recent-reads.json
 
 # Get reading stats
 cover list --status 3 --json | jq 'length'  # Total books read
