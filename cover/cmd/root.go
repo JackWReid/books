@@ -25,7 +25,7 @@ Examples:
   cover search "The Hobbit"           # Search for a book
   cover add "Dune"                    # Add a book to your reading list
   cover list reading                  # Show your currently reading list
-  cover list --status 3               # Show your read books`,
+  cover list --status read            # Show your read books`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

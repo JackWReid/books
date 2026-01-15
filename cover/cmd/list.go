@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"cover/internal/api"
@@ -18,7 +19,7 @@ import (
 
 var (
 	listTable  bool
-	listStatus int
+	listStatus string
 	listBlog   bool
 )
 
@@ -37,7 +38,7 @@ Examples:
   cover list toread                    # Show want to read books (JSON)
   cover list read                      # Show read books (JSON)
   cover list "sci-fi"                  # Show a custom list (JSON)
-  cover list --status 2                # Show books with status ID 2 (JSON)
+  cover list --status reading          # Show books with status reading (JSON)
   cover list reading --table           # Display as formatted table
   cover list read --blog               # Output in blog format (matching blog-to-read.json)`,
 	Args: cobra.MaximumNArgs(1),
@@ -47,7 +48,7 @@ Examples:
 func init() {
 	// List command flags
 	listCmd.Flags().BoolVarP(&listTable, "table", "t", false, "Display as table instead of JSON")
-	listCmd.Flags().IntVarP(&listStatus, "status", "s", 0, "Filter by book status (1=Want to Read, 2=Currently Reading, 3=Read)")
+	listCmd.Flags().StringVarP(&listStatus, "status", "s", "", "Filter by book status (toread, reading, read)")
 	listCmd.Flags().BoolVarP(&listBlog, "blog", "b", false, "Output in blog format (matching blog-to-read.json structure)")
 }
 
@@ -66,9 +67,13 @@ func runList(cmd *cobra.Command, args []string) error {
 	}
 
 	// Determine what to display
-	if listStatus > 0 {
+	if listStatus != "" {
+		statusID, err := parseStatus(listStatus)
+		if err != nil {
+			return err
+		}
 		// Show books by status
-		return displayBooksByStatus(client, listStatus)
+		return displayBooksByStatus(client, statusID)
 	} else if listName != "" {
 		// Show specific list
 		return displaySpecificList(client, listName)
@@ -206,4 +211,19 @@ func getStatusID(statusName string) int {
 	default:
 		return 0
 	}
+}
+
+func parseStatus(status string) (int, error) {
+	statusID := getStatusID(status)
+	if statusID > 0 {
+		return statusID, nil
+	}
+
+	if numericStatus, err := strconv.Atoi(status); err == nil {
+		if numericStatus >= 1 && numericStatus <= 3 {
+			return numericStatus, nil
+		}
+	}
+
+	return 0, fmt.Errorf("invalid status %q (use: toread, reading, read)", status)
 }

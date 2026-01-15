@@ -3,13 +3,13 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
 	"time"
-	"fmt"
 
 	"cover/internal/api"
 )
@@ -27,9 +27,13 @@ func testRunList(client *api.HardcoverClient, args []string) error {
 	}
 
 	// Determine what to display
-	if listStatus > 0 {
+	if listStatus != "" {
 		// Show books by status
-		return displayBooksByStatus(client, listStatus)
+		statusID, err := parseStatus(listStatus)
+		if err != nil {
+			return err
+		}
+		return displayBooksByStatus(client, statusID)
 	} else if listName != "" {
 		// Show specific list
 		return displaySpecificList(client, listName)
@@ -167,6 +171,10 @@ func TestRunList_StatusBased(t *testing.T) {
 	apiKey = "test-key"
 	defer func() { apiKey = originalAPIKey }()
 
+	originalListStatus := listStatus
+	listStatus = "reading"
+	defer func() { listStatus = originalListStatus }()
+
 	// Capture output
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
@@ -176,7 +184,7 @@ func TestRunList_StatusBased(t *testing.T) {
 	// Create a test client with the mock server URL
 	client := api.NewTestHardcoverClient("test-key", server.URL, server.Client())
 
-	err := testRunList(client, []string{"reading"})
+	err := testRunList(client, []string{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

@@ -175,7 +175,7 @@ cover list "Want to Read"    # Show books with "Want to Read" status
 
 #### List Options
 
-- `--status, -s`: Filter by reading status (1-5)
+- `--status, -s`: Filter by reading status (toread, reading, read)
 - `--table, -t`: Display in table format (default)
 - `--json`: Output in JSON format (global flag)
 - `--blog, -b`: Output in blog format (matching blog-to-read.json structure, requires `--json`)
@@ -183,10 +183,9 @@ cover list "Want to Read"    # Show books with "Want to Read" status
 #### Status-Based Listing
 
 ```bash
-cover list --status 1        # Want to Read
-cover list --status 2        # Currently Reading
-cover list --status 3        # Read
-cover list --status 5        # Did Not Finish
+cover list --status toread        # Want to Read
+cover list --status reading        # Currently Reading
+cover list --status read        # Read
 ```
 
 #### List Examples
@@ -199,12 +198,12 @@ cover list
 
 **View currently reading books**:
 ```bash
-cover list --status 2 --table
+cover list --status reading --table
 ```
 
 **Export reading list for blog**:
 ```bash
-cover list --status 3 --blog --json > my-read-books.json
+cover list --status read --blog --json > my-read-books.json
 ```
 
 **Get JSON data for integration**:
@@ -232,8 +231,8 @@ All commands support these global flags:
 
 **Morning routine - check your reading queue**:
 ```bash
-cover list --status 2 --table  # See what you're currently reading
-cover list --status 1          # Check your "Want to Read" list
+cover list --status reading --table  # See what you're currently reading
+cover list --status toread          # Check your "Want to Read" list
 ```
 
 **Add a book you just heard about**:
@@ -279,11 +278,11 @@ cover list cyberpunk --table
 **Generate content for your book blog**:
 ```bash
 # Export recently read books
-cover list --status 3 --blog --json > recent-reads.json
+cover list --status read --blog --json > recent-reads.json
 
 # Get reading stats
-cover list --status 3 --json | jq 'length'  # Total books read
-cover list --status 2 --json | jq 'length'  # Currently reading count
+cover list --status read --json | jq 'length'  # Total books read
+cover list --status reading --json | jq 'length'  # Currently reading count
 ```
 
 ## Advanced Features
@@ -328,13 +327,13 @@ done
 echo "=Ú Current Reading Status:"
 echo "========================="
 echo "Currently Reading:"
-cover list --status 2 --table
+cover list --status reading --table
 
 echo -e "\nWant to Read Queue:"
-cover list --status 1 --json | jq -r '.[0:3][] | "- " + .book.title'
+cover list --status toread --json | jq -r '.[0:3][] | "- " + .book.title'
 
 echo -e "\nBooks Read This Year:"
-cover list --status 3 --json | jq 'length'
+cover list --status read --json | jq 'length'
 ```
 
 ### Data Export and Backup
@@ -345,9 +344,9 @@ cover list --status 3 --json | jq 'length'
 cover list --json > my-library-backup.json
 
 # Export specific reading statuses
-cover list --status 3 --json > books-read.json
-cover list --status 1 --json > want-to-read.json
-cover list --status 2 --json > currently-reading.json
+cover list --status read --json > books-read.json
+cover list --status toread --json > want-to-read.json
+cover list --status reading --json > currently-reading.json
 ```
 
 ## Integration with External Services
